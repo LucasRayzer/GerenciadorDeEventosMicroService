@@ -1,0 +1,3 @@
+com\users\userservice\UserserviceApplication.class
+com\users\userservice\domain\Usuario.class
+com\users\userservice\application\CrudUsuarioService.class
