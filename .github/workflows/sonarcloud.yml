@@ -34,4 +34,8 @@ jobs:
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B sonar:sonar -Dsonar.login=$SONAR_TOKEN
+        run: ./mvnw -B sonar:sonar \
+          -Dsonar.projectKey=LucasRayzer_GerenciadorDeEventosMicroService \
+          -Dsonar.organization=lucasrayzer \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=$SONAR_TOKEN
