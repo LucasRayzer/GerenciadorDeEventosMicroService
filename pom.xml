@@ -11,14 +11,14 @@
     <packaging>pom</packaging>
 
     <modules>
-<!--        <module>avaliacao-service</module>-->
-<!--        <module>evento-service</module>-->
-<!--        <module>Notifications_Service</module>-->
-<!--        <module>payment_service</module>-->
-<!--        <module>service-auth</module>-->
-<!--        <module>Tickets_Service</module>-->
+        <module>avaliacao-service</module>
+        <module>evento-service</module>
+        <module>Notifications_Service</module>
+        <module>payment_service</module>
+        <module>service-auth</module>
+        <module>Tickets_Service</module>
         <module>user-service</module>
-<!--        <module>webhook-service</module>-->
+        <module>webhook-service</module>
     </modules>
 
     <properties>
