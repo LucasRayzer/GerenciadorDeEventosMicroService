@@ -121,7 +121,12 @@ class EventoServiceTest {
         });
         assertThat(exception.getMessage()).isEqualTo("Evento com capacidade máxima atingida.");
         verify(eventoRepository, never()).save(any());
-        verify(ingressosClient, never()).createTicket(anyLong(), any(),PaymentMethod.PIX);
+        verify(ingressosClient, never()).createTicket(
+                anyLong(),
+                any(),
+                eq(PaymentMethod.PIX)
+        );
+
     }
 
     @Test
