@@ -39,6 +39,16 @@ services:
       EVENTS_BASE_URL: "http://host.docker.internal:8083"
     ports:
       - "8084:8084"
-
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,prometheus
+    endpoint:
+      prometheus:
+        enabled: true
+    # opcional: se quiser os endpoints em outra porta
+    # server:
+    #   port: 808x
 volumes:
   pgdata:
