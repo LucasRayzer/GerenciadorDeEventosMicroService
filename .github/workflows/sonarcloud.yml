@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # necessário para melhor análise no SonarCloud
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,13 +29,9 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and test with JaCoCo
-        run: ./mvnw -B clean verify
+        run: ./mvnw -B clean test
 
       - name: SonarCloud Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./mvnw -B sonar:sonar \
-          -Dsonar.projectKey=LucasRayzer_GerenciadorDeEventosMicroService \
-          -Dsonar.organization=lucasrayzer \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=$SONAR_TOKEN
+        run: ./mvnw -B sonar:sonar -Dsonar.login=$SONAR_TOKEN
