@@ -1,3 +1,11 @@
+com\users\userservice\config\PasswordConfig.class
 com\users\userservice\UserserviceApplication.class
+com\users\userservice\dto\UsuarioRequest.class
+com\users\userservice\domain\TipoUsuario.class
+com\users\userservice\dto\UsuarioResponse.class
+com\users\userservice\controller\UsuarioController.class
+com\users\userservice\client\AuthClient.class
 com\users\userservice\domain\Usuario.class
+com\users\userservice\repository\UsuarioRepository.class
+com\users\userservice\client\AuthClient$RegisterRequest.class
 com\users\userservice\application\CrudUsuarioService.class

@@ -21,8 +21,8 @@
         <module name="eventos (1)" />
         <module name="payment" />
         <module name="eventos" />
-        <module name="Notifications_Service" />
         <module name="Tickets" />
+        <module name="Notifications_Service" />
         <module name="avaliacao" />
       </profile>
     </annotationProcessing>
