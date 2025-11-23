@@ -40,6 +40,7 @@ services:
       NOTIFICATIONS_BASE_URL: "http://host.docker.internal:8085"
     ports:
       - "8086:8086"
+
   management:
     endpoints:
       web:
@@ -48,8 +49,17 @@ services:
     endpoint:
       prometheus:
         enabled: true
-    # opcional: se quiser os endpoints em outra porta
-    # server:
-    #   port: 808x
+      health:
+        show-details: always
+    metrics:
+      tags:
+        application: ${spring.application.name}
+    prometheus:
+      metrics:
+        export:
+          enabled: true
+    server:
+      port: 8086
+
 volumes:
   pgdata:

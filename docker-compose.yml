@@ -112,7 +112,7 @@ services:
     volumes:
       - db_payment_data:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d payment" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d paymentdb" ]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -140,7 +140,7 @@ services:
 
   auth-service:
     build:
-      context: ./auth-service/service/service
+      context: ./service-auth
       dockerfile: Dockerfile
     image: auth-service:dev
     container_name: auth-service
@@ -187,7 +187,7 @@ services:
 
   eventos-service:
     build:
-      context: ./eventos-service/eventos
+      context: ./evento-service
     image: eventos-service:dev
     container_name: eventos-service
     depends_on:
@@ -233,7 +233,7 @@ services:
 
   avaliacao-service:
     build:
-      context: ./avaliacao-service/avaliacao
+      context: ./avaliacao-service
     image: avaliacao-service:dev
     container_name: avaliacao-service
     depends_on:
@@ -282,7 +282,7 @@ services:
 
   payment-service:
     build:
-      context: ./payment-service
+      context: ./payment_service
     image: payment-service:dev
     container_name: payment-service
     depends_on:
@@ -357,6 +357,42 @@ services:
     ports:
       - "8080:8080"
     networks: [ backend ]
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    networks: [ backend ]
+    depends_on:
+      - auth-service
+      - user-service
+      - eventos-service
+      - ingressos-service
+      - avaliacao-service
+      - notifications-service
+      - payment-service
+      - webhook-service
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    networks: [ backend ]
+    depends_on:
+      - prometheus
+    volumes:
+      # opcional: provisão automática de data source
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+
 
 # =======================
 # Volumes
