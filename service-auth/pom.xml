@@ -116,6 +116,51 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<!-- Gera o arquivo de cobertura durante o test -->
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+
+					<!-- Gera o relatório após os testes -->
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+
+					<!-- (Opcional) Quebra o build se cobertura mínima não for atingida -->
+					<!--					<execution>-->
+					<!--						<id>check</id>-->
+					<!--						<goals>-->
+					<!--							<goal>check</goal>-->
+					<!--						</goals>-->
+					<!--						<configuration>-->
+					<!--							<rules>-->
+					<!--								<rule>-->
+					<!--									<element>BUNDLE</element>-->
+					<!--									<limits>-->
+					<!--										<limit>-->
+					<!--											<counter>LINE</counter>-->
+					<!--											<value>COVEREDRATIO</value>-->
+					<!--											<minimum>0.80</minimum> &lt;!&ndash; 80% &ndash;&gt;-->
+					<!--										</limit>-->
+					<!--									</limits>-->
+					<!--								</rule>-->
+					<!--							</rules>-->
+					<!--						</configuration>-->
+					<!--					</execution>-->
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
