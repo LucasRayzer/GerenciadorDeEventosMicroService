@@ -15,23 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.set-env.outputs.environment }}
-      sonar-project-key: ${{ steps.set-env.outputs.sonar-project-key }}
     steps:
       - name: Set environment based on branch
         id: set-env
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "environment=production" >> $GITHUB_OUTPUT
-            echo "sonar-project-key=LucasRayzer_GerenciadorDeEventosMicroService_PROD" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/homolog" ]]; then
             echo "environment=homologation" >> $GITHUB_OUTPUT
-            echo "sonar-project-key=LucasRayzer_GerenciadorDeEventosMicroService_HOMOLOG" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "environment=development" >> $GITHUB_OUTPUT
-            echo "sonar-project-key=LucasRayzer_GerenciadorDeEventosMicroService_DEV" >> $GITHUB_OUTPUT
           else
             echo "environment=development" >> $GITHUB_OUTPUT
-            echo "sonar-project-key=LucasRayzer_GerenciadorDeEventosMicroService_DEV" >> $GITHUB_OUTPUT
           fi
 
   build-and-analyze:
@@ -69,10 +64,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           ENVIRONMENT: ${{ needs.determine-environment.outputs.environment }}
         run: |
-          echo "Analyzing for environment: $ENVIRONMENT"
+          echo "Analyzing branch ${{ github.ref_name }} for environment: $ENVIRONMENT"
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=${{ needs.determine-environment.outputs.sonar-project-key }} \
-            -Dsonar.projectName="GerenciadorDeEventos - ${ENVIRONMENT^^}"
+            -Dsonar.projectKey=LucasRayzer_GerenciadorDeEventosMicroService \
+            -Dsonar.organization=lucasrayzer \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.branch.name=${{ github.ref_name }}
 
   deploy-development:
     name: Deploy to Development
@@ -86,6 +83,7 @@ jobs:
       - name: Deploy to Development
         run: |
           echo "Deploying to Development environment..."
+          echo "Branch: ${{ github.ref_name }}"
           # Adicione seus comandos de deploy aqui
 
   deploy-homologation:
@@ -100,6 +98,7 @@ jobs:
       - name: Deploy to Homologation
         run: |
           echo "Deploying to Homologation environment..."
+          echo "Branch: ${{ github.ref_name }}"
           # Adicione seus comandos de deploy aqui
 
   deploy-production:
@@ -114,4 +113,5 @@ jobs:
       - name: Deploy to Production
         run: |
           echo "Deploying to Production environment..."
+          echo "Branch: ${{ github.ref_name }}"
           # Adicione seus comandos de deploy aqui
