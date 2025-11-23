@@ -1,5 +1,4 @@
 name: SonarQube Multi-Environment
-
 on:
   push:
     branches:
@@ -8,6 +7,10 @@ on:
       - homolog
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+      - homolog
 
 jobs:
   determine-environment:
@@ -15,10 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.set-env.outputs.environment }}
+      should_deploy: ${{ steps.set-env.outputs.should_deploy }}
     steps:
       - name: Set environment based on branch
         id: set-env
         run: |
+          # Só faz deploy em push (não em PR)
+          SHOULD_DEPLOY="false"
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            SHOULD_DEPLOY="true"
+          fi
+          
+          # Determina o ambiente baseado na branch atual
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "environment=production" >> $GITHUB_OUTPUT
           elif [[ "${{ github.ref }}" == "refs/heads/homolog" ]]; then
@@ -28,12 +39,15 @@ jobs:
           else
             echo "environment=development" >> $GITHUB_OUTPUT
           fi
+          
+          echo "should_deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Event: ${{ github.event_name }}"
 
   build-and-analyze:
     name: Build and Analyze - ${{ needs.determine-environment.outputs.environment }}
     runs-on: ubuntu-latest
     needs: determine-environment
-    environment: ${{ needs.determine-environment.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,7 +89,10 @@ jobs:
     name: Deploy to Development
     runs-on: ubuntu-latest
     needs: [determine-environment, build-and-analyze]
-    if: needs.determine-environment.outputs.environment == 'development'
+    if: |
+      needs.determine-environment.outputs.environment == 'development' &&
+      needs.determine-environment.outputs.should_deploy == 'true' &&
+      github.ref == 'refs/heads/develop'
     environment: 
       name: development
       url: https://dev.seudominio.com
@@ -84,13 +101,17 @@ jobs:
         run: |
           echo "Deploying to Development environment..."
           echo "Branch: ${{ github.ref_name }}"
+          echo "Event: ${{ github.event_name }}"
           # Adicione seus comandos de deploy aqui
 
   deploy-homologation:
     name: Deploy to Homologation
     runs-on: ubuntu-latest
     needs: [determine-environment, build-and-analyze]
-    if: needs.determine-environment.outputs.environment == 'homologation'
+    if: |
+      needs.determine-environment.outputs.environment == 'homologation' &&
+      needs.determine-environment.outputs.should_deploy == 'true' &&
+      github.ref == 'refs/heads/homolog'
     environment: 
       name: homologation
       url: https://homolog.seudominio.com
@@ -99,13 +120,17 @@ jobs:
         run: |
           echo "Deploying to Homologation environment..."
           echo "Branch: ${{ github.ref_name }}"
+          echo "Event: ${{ github.event_name }}"
           # Adicione seus comandos de deploy aqui
 
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [determine-environment, build-and-analyze]
-    if: needs.determine-environment.outputs.environment == 'production'
+    if: |
+      needs.determine-environment.outputs.environment == 'production' &&
+      needs.determine-environment.outputs.should_deploy == 'true' &&
+      github.ref == 'refs/heads/main'
     environment: 
       name: production
       url: https://prod.seudominio.com
@@ -114,4 +139,5 @@ jobs:
         run: |
           echo "Deploying to Production environment..."
           echo "Branch: ${{ github.ref_name }}"
+          echo "Event: ${{ github.event_name }}"
           # Adicione seus comandos de deploy aqui
