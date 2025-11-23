@@ -9,7 +9,7 @@
         <module name="API_Gateway" />
         <module name="userservice" />
       </profile>
-      <profile name="Annotation profile for eventos" enabled="true">
+      <profile name="Annotation profile for servicos-geral" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -19,10 +19,10 @@
         </processorPath>
         <module name="service" />
         <module name="eventos (1)" />
-        <module name="payment" />
-        <module name="eventos" />
-        <module name="Tickets" />
         <module name="Notifications_Service" />
+        <module name="Tickets" />
+        <module name="eventos" />
+        <module name="payment" />
         <module name="avaliacao" />
       </profile>
     </annotationProcessing>
