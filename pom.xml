@@ -46,7 +46,12 @@
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>3.11.0.3922</version>
             </plugin>
-            
+            <!-- springdoc -->
+            <plugin>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                <version>1.6.15</version>
+            </plugin>
             <!-- JaCoCo para cobertura -->
             <plugin>
                 <groupId>org.jacoco</groupId>
