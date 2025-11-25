@@ -18,6 +18,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()   // login, register, validate
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()              // se tiver algo além de /auth
                 );
         return http.build();

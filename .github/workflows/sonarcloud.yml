@@ -23,7 +23,6 @@ jobs:
       - name: Set environment based on branch
         id: set-env
         run: |
-          # Só faz deploy em push (não em PR)
           SHOULD_DEPLOY="false"
           if [[ "${{ github.event_name }}" == "push" ]]; then
             SHOULD_DEPLOY="true"
