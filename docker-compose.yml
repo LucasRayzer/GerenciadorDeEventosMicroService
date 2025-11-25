@@ -135,6 +135,44 @@ services:
     networks: [ backend ]
 
   # =======================
+  # Monitoramento
+  # =======================
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    networks: [ backend ]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    networks: [ backend ]
+    restart: unless-stopped
+
+  # =======================
   # Serviços de Negócio
   # =======================
 
@@ -158,6 +196,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8086:8086"
     networks: [ backend ]
@@ -181,6 +223,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8082:8082"
     networks: [ backend ]
@@ -204,6 +250,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8083:8083"
     networks: [ backend ]
@@ -227,6 +277,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8081:8081"
     networks: [ backend ]
@@ -251,8 +305,11 @@ services:
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
 
-      # Exemplo de variável que seu serviço já usa:
       EVENTS_BASE_URL: "http://eventos-service:8083"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8084:8084"
     networks: [ backend ]
@@ -276,6 +333,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8085:8085"
     networks: [ backend ]
@@ -299,6 +360,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8087:8087"
     networks: [ backend ]
@@ -322,6 +387,10 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8088:8088"
     networks: [ backend ]
@@ -344,7 +413,6 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SERVER_PORT: "8080"
 
-
       AUTH_SERVICE_URI: "http://auth-service:8086"
       USER_SERVICE_URI: "http://user-service:8082"
       EVENT_SERVICE_URI: "http://eventos-service:8083"
@@ -354,45 +422,13 @@ services:
       PAYMENT_SERVICE_URI: "http://payment-service:8087"
       WEBHOOK_SERVICE_URI: "http://webhook-service:8088"
       AUTH_VALIDATE_URL: "http://auth-service:8086/auth/validate"
+      
+      # Actuator/Prometheus
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
+      MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
     ports:
       - "8080:8080"
     networks: [ backend ]
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-    ports:
-      - "9090:9090"
-    networks: [ backend ]
-    depends_on:
-      - auth-service
-      - user-service
-      - eventos-service
-      - ingressos-service
-      - avaliacao-service
-      - notifications-service
-      - payment-service
-      - webhook-service
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    ports:
-      - "3000:3000"
-    networks: [ backend ]
-    depends_on:
-      - prometheus
-    volumes:
-      # opcional: provisão automática de data source
-      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-
 
 # =======================
 # Volumes
@@ -406,6 +442,8 @@ volumes:
   db_notifications_data:
   db_webhook_data:
   db_payment_data:
+  prometheus_data:
+  grafana_data:
 
 # =======================
 # Networks
