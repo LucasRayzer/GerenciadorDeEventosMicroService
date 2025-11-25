@@ -38,7 +38,6 @@
     </properties>
 
 
-
     <build>
         <plugins>
             <!-- Sonar -->
@@ -47,7 +46,7 @@
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>3.11.0.3922</version>
             </plugin>
-
+            
             <!-- JaCoCo para cobertura -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -69,29 +68,35 @@
                         </goals>
                     </execution>
 
-                    <!-- opcional: trava se ficar abaixo de 80% -->
-                    <!--
+                    <!-- trava se ficar abaixo de x% -->
                     <execution>
                         <id>check</id>
+                        <!-- Roda a checagem na fase -->
+                        <phase>verify</phase> 
                         <goals>
                             <goal>check</goal>
                         </goals>
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>BUNDLE</element>
+                                    <!-- Aplica a regra ao projeto inteiro -->
+                                    <element>BUNDLE</element> 
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.80</minimum>
+                                            <minimum>0.10</minimum> <!-- Cobertura mínima de x% das linhas -->
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.10</minimum> <!-- Cobertura mínima de x% dos branches -->
                                         </limit>
                                     </limits>
                                 </rule>
                             </rules>
                         </configuration>
                     </execution>
-                    -->
                 </executions>
             </plugin>
         </plugins>

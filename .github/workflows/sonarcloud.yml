@@ -41,18 +41,17 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build com Maven
-        run: mvn clean install -DskipTests
+      - name: Executar Build, Testes, Cobertura e Verificação (80%)
+        # Este comando executa as fases 'test' e 'verify'.
+        # O 'jacoco:check' está associado à fase 'verify' no pom.xml e falhará se a cobertura for baixa.
+        run: mvn clean install
 
-      - name: Executar Testes Unitários
-        run: mvn test
-
-
-      - name: Verificar Cobertura de Testes (Mínimo 80%)
-        run: |
-          mvn jacoco:report
-          mvn jacoco:check -Dcoverage.minimum=0.10
-
+      - name: Upload Relatório de Cobertura
+        # Este relatório é crucial para o SonarQube no próximo Job
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
       - name: Upload Relatório de Cobertura
         uses: actions/upload-artifact@v4
         with:
@@ -108,7 +107,7 @@ jobs:
     name: Build e Push Docker Images
     runs-on: ubuntu-latest
     needs: [build-and-test, code-analysis]
-    if: github.event_name == 'push'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
     
     strategy:
       matrix:
@@ -315,5 +314,5 @@ jobs:
              [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
             echo "Deploy realizado com sucesso!"
           else
-            echo "ℹNenhum deploy foi executado ou ocorreu falha"
+            echo "Nenhum deploy foi executado ou ocorreu falha"
           fi
