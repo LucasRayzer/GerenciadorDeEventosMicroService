@@ -7,7 +7,6 @@ on:
       - main
   pull_request:
     branches:
-      - develop
       - main
 
 env:
@@ -42,8 +41,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Executar Build, Testes, Cobertura e Verificação (80%)
-        # Se este step falhar (por ex., cobertura abaixo de 80%), o Job será marcado como falha.
+      - name: Executar Build, Testes, Cobertura e Verificação (x%)
+        # Se este step falhar (por ex., cobertura abaixo de x%), o Job será marcado como falha.
         run: mvn clean install
 
       - name: Upload Relatório de Cobertura
@@ -191,7 +190,7 @@ jobs:
         run: mvn javadoc:aggregate
 
       - name: Gerar Documentação OpenAPI/Swagger
-        run: mvn springdoc-openapi:generate || echo "Swagger generation skipped"
+        run: mvn clean package -DskipTests
 
       - name: Deploy Documentação para GitHub Pages
         if: github.ref == 'refs/heads/main'
@@ -258,7 +257,10 @@ jobs:
     environment:
       name: production
       url: http://plataforma-eventos.com
-    
+
+    permissions:
+      contents: write
+
     steps:
       # ... (steps de deploy-prod mantidos inalterados)
       - name: Checkout código
