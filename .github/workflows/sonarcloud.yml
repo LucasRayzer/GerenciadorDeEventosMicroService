@@ -190,7 +190,7 @@ jobs:
         run: mvn javadoc:aggregate
 
       - name: Gerar Documentação OpenAPI/Swagger
-        run: mvn springdoc-openapi:generate || echo "Swagger generation skipped"
+        run: mvn clean package -DskipTests
 
       - name: Deploy Documentação para GitHub Pages
         if: github.ref == 'refs/heads/main'
