@@ -235,27 +235,9 @@ jobs:
           echo "IMAGE_TAG=prod-${{ github.sha }}" >> .env
           echo "ENVIRONMENT=prod" >> .env
 
-      # - name: Deploy com Docker Compose
-      #   run: |
-      #     docker compose pull
-      #     docker compose up -d
-
-      # - name: Health Check Produção
-      #   run: |
-      #     echo "Aguardando serviços iniciarem..."
-      #     sleep 45
-      #     # O curl -f fará com que o step falhe se o health check não retornar 200
-      #     curl -f http://localhost:8080/actuator/health || exit 1 # Garante que a falha para se o Health Check falhar
-
-      # - name: Criar Tag de Release
-      #   run: |
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git tag -a "release-$(date +'%Y%m%d-%H%M%S')" -m "Release to production"
-      #     git push origin --tags
-
-      # - name: Listar containers em execução
-      #   run: docker compose ps
+  # =======================
+  # JOB 7: NOTIFICAÇÃO
+  # =======================
   notify:
     name: Notificação de Deploy
     runs-on: ubuntu-latest
