@@ -107,7 +107,7 @@ jobs:
     name: Build e Push Docker Images
     runs-on: ubuntu-latest
     needs: [build-and-test, code-analysis]
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
+    if: github.event_name == 'refs/heads/dev' || github.event_name == 'refs/heads/main'
     
     strategy:
       matrix:
@@ -194,7 +194,7 @@ jobs:
         run: mvn springdoc-openapi:generate || echo "Swagger generation skipped"
 
       - name: Deploy Documentação para GitHub Pages
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -208,7 +208,7 @@ jobs:
     name: Deploy - Ambiente de Desenvolvimento
     runs-on: ubuntu-latest
     needs: docker-build-push
-    if: github.ref == 'refs/heads/dev'
+    if: github.event_name == 'refs/heads/dev'
     environment:
       name: development
       url: http://dev.plataforma-eventos.local
@@ -251,7 +251,7 @@ jobs:
     name: Deploy - Ambiente de Produção
     runs-on: ubuntu-latest
     needs: docker-build-push
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'refs/heads/main'
     environment:
       name: production
       url: http://plataforma-eventos.com
