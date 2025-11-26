@@ -7,7 +7,6 @@ on:
       - main
   pull_request:
     branches:
-      - develop
       - main
 
 env:
@@ -258,7 +257,10 @@ jobs:
     environment:
       name: production
       url: http://plataforma-eventos.com
-    
+
+    permissions:
+      contents: write
+
     steps:
       # ... (steps de deploy-prod mantidos inalterados)
       - name: Checkout código
