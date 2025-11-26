@@ -41,8 +41,8 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Executar Build, Testes, Cobertura e Verificação (80%)
-        # Se este step falhar (por ex., cobertura abaixo de 80%), o Job será marcado como falha.
+      - name: Executar Build, Testes, Cobertura e Verificação (x%)
+        # Se este step falhar (por ex., cobertura abaixo de x%), o Job será marcado como falha.
         run: mvn clean install
 
       - name: Upload Relatório de Cobertura
