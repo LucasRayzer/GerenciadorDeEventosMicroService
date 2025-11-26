@@ -113,20 +113,24 @@
          <!-- Plugins que executam na raiz (se necessário, como agregação de JaCoCo/Site) -->
         <plugins>
              <!-- JaCoCo (necessário aqui para agregação/relatório da raiz) -->
-             <plugin>
-                 <groupId>org.jacoco</groupId>
-                 <artifactId>jacoco-maven-plugin</artifactId>
-             </plugin>
-             <plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.12.1</version>
-             </plugin>
-             <plugin>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.5.0</version>
-             </plugin>
+            </plugin>
         </plugins>
     </build>
 
