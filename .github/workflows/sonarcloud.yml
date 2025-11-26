@@ -82,9 +82,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=LucasRayzer_GerenciadorDeEventosMicroService \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
 
   docker-build-push:
     name: Build e Push Docker Images
