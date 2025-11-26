@@ -286,7 +286,6 @@ jobs:
 
       # - name: Listar containers em execução
       #   run: docker compose ps
-
   # =======================
   # JOB 7: NOTIFICAÇÃO
   # =======================
