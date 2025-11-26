@@ -230,20 +230,6 @@ jobs:
           echo "IMAGE_TAG=dev-${{ github.sha }}" >> .env
           echo "ENVIRONMENT=dev" >> .env
 
-      - name: Deploy com Docker Compose
-        run: |
-          docker compose pull
-          docker compose up -d
-
-      - name: Verificar Health Check
-        run: |
-          echo "Aguardando serviços iniciarem..."
-          sleep 30
-          # O curl -f fará com que o step falhe se o health check não retornar 200
-          curl -f http://localhost:8080/actuator/health || echo "Health check ainda não disponível"
-
-      - name: Listar containers em execução
-        run: docker compose ps
 
   # =======================
   # JOB 6: DEPLOY - PRODUÇÃO
@@ -279,27 +265,27 @@ jobs:
           echo "IMAGE_TAG=prod-${{ github.sha }}" >> .env
           echo "ENVIRONMENT=prod" >> .env
 
-      - name: Deploy com Docker Compose
-        run: |
-          docker compose pull
-          docker compose up -d
+      # - name: Deploy com Docker Compose
+      #   run: |
+      #     docker compose pull
+      #     docker compose up -d
 
-      - name: Health Check Produção
-        run: |
-          echo "Aguardando serviços iniciarem..."
-          sleep 45
-          # O curl -f fará com que o step falhe se o health check não retornar 200
-          curl -f http://localhost:8080/actuator/health || exit 1 # Garante que a falha para se o Health Check falhar
+      # - name: Health Check Produção
+      #   run: |
+      #     echo "Aguardando serviços iniciarem..."
+      #     sleep 45
+      #     # O curl -f fará com que o step falhe se o health check não retornar 200
+      #     curl -f http://localhost:8080/actuator/health || exit 1 # Garante que a falha para se o Health Check falhar
 
-      - name: Criar Tag de Release
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git tag -a "release-$(date +'%Y%m%d-%H%M%S')" -m "Release to production"
-          git push origin --tags
+      # - name: Criar Tag de Release
+      #   run: |
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git tag -a "release-$(date +'%Y%m%d-%H%M%S')" -m "Release to production"
+      #     git push origin --tags
 
-      - name: Listar containers em execução
-        run: docker compose ps
+      # - name: Listar containers em execução
+      #   run: docker compose ps
 
   # =======================
   # JOB 7: NOTIFICAÇÃO
