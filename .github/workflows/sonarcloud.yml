@@ -15,9 +15,6 @@ env:
   IMAGE_OWNER: lucasrayzer
 
 jobs:
-  # =======================
-  # JOB 1: BUILD E TESTES
-  # =======================
   build-and-test:
     name: Build e Testes Automatizados
     runs-on: ubuntu-latest
@@ -42,7 +39,6 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Executar Build, Testes, Cobertura e Verificação (x%)
-        # Se este step falhar (por ex., cobertura abaixo de x%), o Job será marcado como falha.
         run: mvn clean install
 
       - name: Upload Relatório de Cobertura
@@ -51,9 +47,6 @@ jobs:
           name: coverage-report
           path: '**/target/site/jacoco/'
 
-  # =======================
-  # JOB 2: ANÁLISE DE CÓDIGO (SONARQUBE)
-  # =======================
   code-analysis:
     name: Análise de Código - SonarQube
     runs-on: ubuntu-latest
@@ -89,23 +82,16 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          # Importante: O SonarQube não deve impedir o build/push, mas sim a aprovação do Pull Request.
-          # Mantido como 'verify' para realizar a análise. Se o Quality Gate estiver configurado, pode falhar.
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.projectKey=LucasRayzer_GerenciadorDeEventosMicroService \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
-  # =======================
-  # JOB 3: BUILD E PUSH IMAGENS DOCKER
-  # =======================
   docker-build-push:
     name: Build e Push Docker Images
     runs-on: ubuntu-latest
-    # Se um dos jobs (Build/Testes ou Sonar) FALHAR, este job NÃO será executado, 
-    # e o deploy (Job 6) será pulado. Isso é o comportamento de segurança desejado.
     needs: [build-and-test, code-analysis]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main')
-    
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
+
     strategy:
       matrix:
         service:
@@ -157,16 +143,12 @@ jobs:
         with:
           context: ${{ matrix.service.context }}
           push: true
-          # Usando IMAGE_OWNER para simplificar o nome
           tags: |
             ${{ env.IMAGE_OWNER }}/${{ matrix.service.name }}:${{ steps.image-tag.outputs.tag }}
             ${{ env.IMAGE_OWNER }}/${{ matrix.service.name }}:${{ steps.image-tag.outputs.env }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # =======================
-  # JOB 4: GERAR DOCUMENTAÇÃO
-  # =======================
   generate-docs:
     name: Gerar Documentação Automática
     runs-on: ubuntu-latest
@@ -176,7 +158,6 @@ jobs:
       contents: write
     
     steps:
-      # ... (steps de documentação mantidos inalterados)
       - name: Checkout código
         uses: actions/checkout@v4
 
@@ -200,20 +181,16 @@ jobs:
           publish_dir: ./target/site/apidocs
           destination_dir: docs
 
-  # =======================
-  # JOB 5: DEPLOY - DESENVOLVIMENTO
-  # =======================
   deploy-dev:
     name: Deploy - Ambiente de Desenvolvimento
     runs-on: ubuntu-latest
     needs: docker-build-push
-    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/dev' # <--- Adicionado success() para clareza
+    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment:
       name: development
       url: http://dev.plataforma-eventos.local
     
     steps:
-      # ... (steps de deploy-dev mantidos inalterados)
       - name: Checkout código
         uses: actions/checkout@v4
 
@@ -223,10 +200,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Atualizar docker compose com imagens do Docker Hub
+      - name: Atualizar docker compose
         run: |
-          # Criar arquivo .env com as imagens
-          echo "DOCKER_USERNAME=${{ env.IMAGE_OWNER }}" > .env # Usando IMAGE_OWNER definido no env global
+          echo "DOCKER_USERNAME=${{ env.IMAGE_OWNER }}" > .env
           echo "IMAGE_TAG=dev-${{ github.sha }}" >> .env
           echo "ENVIRONMENT=dev" >> .env
 
@@ -237,23 +213,17 @@ jobs:
 
       - name: Verificar Health Check
         run: |
-          echo "Aguardando serviços iniciarem..."
           sleep 30
-          # O curl -f fará com que o step falhe se o health check não retornar 200
           curl -f http://localhost:8080/actuator/health || echo "Health check ainda não disponível"
 
-      - name: Listar containers em execução
+      - name: Listar containers
         run: docker compose ps
 
-  # =======================
-  # JOB 6: DEPLOY - PRODUÇÃO
-  # =======================
   deploy-prod:
     name: Deploy - Ambiente de Produção
     runs-on: ubuntu-latest
     needs: docker-build-push
-    # A condição deve ser: se o Job anterior foi bem-sucedido E se é um push para a main
-    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main' 
+    if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
       url: http://plataforma-eventos.com
@@ -262,7 +232,6 @@ jobs:
       contents: write
 
     steps:
-      # ... (steps de deploy-prod mantidos inalterados)
       - name: Checkout código
         uses: actions/checkout@v4
 
@@ -272,10 +241,9 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Atualizar docker compose com imagens do Docker Hub
+      - name: Atualizar docker compose
         run: |
-          # Criar arquivo .env com as imagens
-          echo "DOCKER_USERNAME=${{ env.IMAGE_OWNER }}" > .env # Usando IMAGE_OWNER
+          echo "DOCKER_USERNAME=${{ env.IMAGE_OWNER }}" > .env
           echo "IMAGE_TAG=prod-${{ github.sha }}" >> .env
           echo "ENVIRONMENT=prod" >> .env
 
@@ -286,10 +254,8 @@ jobs:
 
       - name: Health Check Produção
         run: |
-          echo "Aguardando serviços iniciarem..."
           sleep 45
-          # O curl -f fará com que o step falhe se o health check não retornar 200
-          curl -f http://localhost:8080/actuator/health || exit 1 # Garante que a falha para se o Health Check falhar
+          curl -f http://localhost:8080/actuator/health || exit 1
 
       - name: Criar Tag de Release
         run: |
@@ -298,32 +264,28 @@ jobs:
           git tag -a "release-$(date +'%Y%m%d-%H%M%S')" -m "Release to production"
           git push origin --tags
 
-      - name: Listar containers em execução
+      - name: Listar containers
         run: docker compose ps
 
-  # =======================
-  # JOB 7: NOTIFICAÇÃO
-  # =======================
   notify:
     name: Notificação de Deploy
     runs-on: ubuntu-latest
     needs: [deploy-dev, deploy-prod]
-    if: always() 
+    if: always()
     
     steps:
       - name: Verificar Status do Deploy
         run: |
-          echo "Status dos deploys:"
-          echo "- Dev: ${{ needs.deploy-dev.result }}"
-          echo "- Prod: ${{ needs.deploy-prod.result }}"
+          echo "Dev: ${{ needs.deploy-dev.result }}"
+          echo "Prod: ${{ needs.deploy-prod.result }}"
           
           if [[ "${{ needs.deploy-dev.result }}" == "success" ]] || \
-              [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
+             [[ "${{ needs.deploy-prod.result }}" == "success" ]]; then
             echo "Deploy realizado com sucesso!"
           elif [[ "${{ needs.deploy-dev.result }}" == "failure" ]] || \
                [[ "${{ needs.deploy-prod.result }}" == "failure" ]]; then
             echo "ATENÇÃO: Um ou mais deploys falharam!"
-            exit 1 # <--- Adicionado exit 1 para o job de Notificação falhar em caso de falha nos deploys
+            exit 1
           else
-            echo "Nenhum deploy foi executado ou ocorreu falha/skipped"
+            echo "Nenhum deploy executado"
           fi
