@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: target/site/jacoco/
+          path: '**/target/site/jacoco/'
       - name: Upload Relatório de Cobertura
         uses: actions/upload-artifact@v4
         with:
