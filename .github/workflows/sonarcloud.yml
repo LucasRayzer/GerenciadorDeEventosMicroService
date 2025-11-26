@@ -256,7 +256,6 @@ jobs:
 
       # - name: Listar containers em execução
       #   run: docker compose ps
-
   notify:
     name: Notificação de Deploy
     runs-on: ubuntu-latest
