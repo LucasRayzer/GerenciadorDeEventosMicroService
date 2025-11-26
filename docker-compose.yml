@@ -173,11 +173,14 @@ services:
     restart: unless-stopped
 
   # =======================
-  # Serviços de Negócio (IMAGENS DO DOCKER HUB)
+  # Serviços de Negócio
   # =======================
 
   auth-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/auth-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./service-auth
+      dockerfile: Dockerfile
+    image: auth-service:dev
     container_name: auth-service
     depends_on:
       db-auth:
@@ -193,7 +196,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -202,7 +205,9 @@ services:
     networks: [ backend ]
 
   user-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/user-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./user-service
+    image: user-service:dev
     container_name: user-service
     depends_on:
       db-users:
@@ -218,7 +223,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -227,7 +232,9 @@ services:
     networks: [ backend ]
 
   eventos-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/eventos-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./evento-service
+    image: eventos-service:dev
     container_name: eventos-service
     depends_on:
       db-eventos:
@@ -243,7 +250,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -252,7 +259,9 @@ services:
     networks: [ backend ]
 
   ingressos-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/ingressos-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./Tickets_Service
+    image: ingressos-service:dev
     container_name: ingressos-service
     depends_on:
       db-ingressos:
@@ -268,7 +277,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -277,7 +286,9 @@ services:
     networks: [ backend ]
 
   avaliacao-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/avaliacao-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./avaliacao-service
+    image: avaliacao-service:dev
     container_name: avaliacao-service
     depends_on:
       db-avaliacao:
@@ -295,7 +306,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
 
       EVENTS_BASE_URL: "http://eventos-service:8083"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -304,7 +315,9 @@ services:
     networks: [ backend ]
 
   notifications-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/notifications-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./Notifications_Service
+    image: notifications-service:dev
     container_name: notifications-service
     depends_on:
       db-notifications:
@@ -320,7 +333,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -329,7 +342,9 @@ services:
     networks: [ backend ]
 
   payment-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/payment-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./payment_service
+    image: payment-service:dev
     container_name: payment-service
     depends_on:
       db-payment:
@@ -345,7 +360,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -354,7 +369,9 @@ services:
     networks: [ backend ]
 
   webhook-service:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/webhook-service:${IMAGE_TAG:-latest}
+    build:
+      context: ./webhook-service
+    image: webhook-service:dev
     container_name: webhook-service
     depends_on:
       db-webhook:
@@ -370,7 +387,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # Actuator/Prometheus
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,metrics,prometheus"
       MANAGEMENT_METRICS_EXPORT_PROMETHEUS_ENABLED: "true"
@@ -379,7 +396,9 @@ services:
     networks: [ backend ]
 
   api-gateway:
-    image: ${DOCKER_USERNAME:-lucasrayzer}/api-gateway:${IMAGE_TAG:-latest}
+    build:
+      context: ./API_Gateway_Service
+    image: api-gateway:dev
     container_name: api-gateway
     depends_on:
       - auth-service
