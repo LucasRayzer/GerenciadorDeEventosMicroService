@@ -173,14 +173,11 @@ services:
     restart: unless-stopped
 
   # =======================
-  # Serviços de Negócio
+  # Serviços de Negócio (IMAGENS DO DOCKER HUB)
   # =======================
 
   auth-service:
-    build:
-      context: ./service-auth
-      dockerfile: Dockerfile
-    image: auth-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/auth-service:${IMAGE_TAG:-latest}
     container_name: auth-service
     depends_on:
       db-auth:
@@ -205,9 +202,7 @@ services:
     networks: [ backend ]
 
   user-service:
-    build:
-      context: ./user-service
-    image: user-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/user-service:${IMAGE_TAG:-latest}
     container_name: user-service
     depends_on:
       db-users:
@@ -232,9 +227,7 @@ services:
     networks: [ backend ]
 
   eventos-service:
-    build:
-      context: ./evento-service
-    image: eventos-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/eventos-service:${IMAGE_TAG:-latest}
     container_name: eventos-service
     depends_on:
       db-eventos:
@@ -259,9 +252,7 @@ services:
     networks: [ backend ]
 
   ingressos-service:
-    build:
-      context: ./Tickets_Service
-    image: ingressos-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/ingressos-service:${IMAGE_TAG:-latest}
     container_name: ingressos-service
     depends_on:
       db-ingressos:
@@ -286,9 +277,7 @@ services:
     networks: [ backend ]
 
   avaliacao-service:
-    build:
-      context: ./avaliacao-service
-    image: avaliacao-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/avaliacao-service:${IMAGE_TAG:-latest}
     container_name: avaliacao-service
     depends_on:
       db-avaliacao:
@@ -315,9 +304,7 @@ services:
     networks: [ backend ]
 
   notifications-service:
-    build:
-      context: ./Notifications_Service
-    image: notifications-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/notifications-service:${IMAGE_TAG:-latest}
     container_name: notifications-service
     depends_on:
       db-notifications:
@@ -342,9 +329,7 @@ services:
     networks: [ backend ]
 
   payment-service:
-    build:
-      context: ./payment_service
-    image: payment-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/payment-service:${IMAGE_TAG:-latest}
     container_name: payment-service
     depends_on:
       db-payment:
@@ -369,9 +354,7 @@ services:
     networks: [ backend ]
 
   webhook-service:
-    build:
-      context: ./webhook-service
-    image: webhook-service:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/webhook-service:${IMAGE_TAG:-latest}
     container_name: webhook-service
     depends_on:
       db-webhook:
@@ -396,9 +379,7 @@ services:
     networks: [ backend ]
 
   api-gateway:
-    build:
-      context: ./API_Gateway_Service
-    image: api-gateway:dev
+    image: ${DOCKER_USERNAME:-lucasrayzer}/api-gateway:${IMAGE_TAG:-latest}
     container_name: api-gateway
     depends_on:
       - auth-service
