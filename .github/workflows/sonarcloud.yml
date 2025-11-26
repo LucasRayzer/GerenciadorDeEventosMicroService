@@ -3,11 +3,11 @@ name: CI/CD Pipeline - Plataforma de Eventos
 on:
   push:
     branches:
-      - dev
+      - develop
       - main
   pull_request:
     branches:
-      - dev
+      - develop
       - main
 
 env:
