@@ -1,11 +1,11 @@
-package Auth.service; // Pacote conforme o seu arquivo
+package Auth.service; 
 
 import Auth.service.client.UserClient;
 import dto.AuthResponse;
-import dto.RegisterRequest; // Precisa importar o DTO
+import dto.RegisterRequest; 
 import java.util.Date;
 import model.User;
-import model.TipoUsuario; // Precisa importar o Enum
+import model.TipoUsuario;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

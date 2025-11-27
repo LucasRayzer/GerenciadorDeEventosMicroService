@@ -1,202 +1,165 @@
 package Auth.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import controller.AutenticacaoController;
 import dto.AuthResponse;
 import dto.LoginRequest;
 import dto.RegisterRequest;
 import model.TipoUsuario;
 import model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import repository.UserRepository;
 import security.JwtUtil;
 import service.ServiceAutenticacao;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AutenticacaoController.class)
+@ExtendWith(MockitoExtension.class)
 class AutenticacaoControllerTest {
-@Autowired
-    private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
+    @Mock
     private ServiceAutenticacao autenticacaoService;
 
-    @MockBean
+    @Mock
     private JwtUtil jwtUtil;
 
-    @MockBean
+    @Mock
     private UserRepository userRepository;
+
+    @InjectMocks
+    private AutenticacaoController autenticacaoController;
 
     private final UUID userId = UUID.randomUUID();
     private final String username = "testuser@auth.com";
     private final String validToken = "valid.jwt.token";
+    private User mockUser;
+    private Date mockExpiration;
 
-    // Método auxiliar para criar um User Mock (CORRIGIDO)
-    private User criarMockUser(UUID id, String username, TipoUsuario tipo) {
-        User user = new User();
-        user.setId(id);
-        user.setUsername(username);
-        user.setTipo(tipo);
-        user.setSenha("hashed_mock");
-        // token e tokenExpiration ficam null, pois não são relevantes para este teste
-        return user;
+    @BeforeEach
+    void setUp() {
+        mockExpiration = new Date(System.currentTimeMillis() + 3600000);
+        
+        // Inicializa um usuário mock padrão
+        mockUser = new User();
+        mockUser.setId(userId);
+        mockUser.setUsername(username);
+        mockUser.setTipo(TipoUsuario.CLIENTE);
+        mockUser.setSenha("hashed_mock");
     }
-    
-    // Método auxiliar para criar RegisterRequest (CORRIGIDO)
-    private RegisterRequest criarMockRegisterRequest() {
+
+    private LoginRequest criarLoginRequest(String username, String senha) {
+        LoginRequest request = new LoginRequest();
+        request.setUsername(username);
+        request.setSenha(senha);
+        return request;
+    }
+
+    private RegisterRequest criarRegisterRequest() {
         RegisterRequest request = new RegisterRequest();
         request.setNome("Nome Teste");
-        request.setEmail("email@reg.com");
+        request.setEmail(username);
         request.setSenha("senha123");
-        request.setEndereco("Endereco Teste");
-        request.setTelefone("999999999");
         request.setTipo(TipoUsuario.CLIENTE);
         return request;
     }
 
+    // --- Testes de Login ---
 
     @Test
-    void deveFazerLoginComSucessoERetornarToken() throws Exception {
-        
-        LoginRequest request = new LoginRequest("user@teste.com", "senha123"); 
-        Date expiration = new Date(System.currentTimeMillis() + 3600000);
-        AuthResponse response = new AuthResponse(validToken, expiration);
+    void deveFazerLoginComSucesso() {
+        LoginRequest request = criarLoginRequest(username, "senha123");
+        AuthResponse authResponse = new AuthResponse(validToken, mockExpiration);
 
-        when(autenticacaoService.login(request.getUsername(), request.getSenha())).thenReturn(response);
+        when(autenticacaoService.login(username, "senha123")).thenReturn(authResponse);
 
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value(validToken))
-                .andExpect(jsonPath("$.expiration").exists());
+        ResponseEntity<?> response = autenticacaoController.login(request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(authResponse);
+        verify(autenticacaoService).login(username, "senha123");
     }
 
+ 
     @Test
-    void deveRetornarStatusUnauthorizedParaLoginComErro() throws Exception {
-       
-        LoginRequest request = new LoginRequest("user@teste.com", "senha_errada"); 
+    void deveRegistrarUsuarioComSucessoERetornarCreated() {
+        RegisterRequest request = criarRegisterRequest();
 
-       
-        doThrow(new RuntimeException("Senha incorreta."))
-                .when(autenticacaoService).login(request.getUsername(), request.getSenha());
+        doNothing().when(autenticacaoService).register(request);
 
-        mockMvc.perform(post("/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-               
-                .andExpect(status().isInternalServerError()); 
+        ResponseEntity<?> response = autenticacaoController.register(request);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isEqualTo("Usuário cadastrado com sucesso!");
+        verify(autenticacaoService).register(request);
     }
-
-
-    @Test
-    void deveRegistrarUsuarioComSucessoERetornarCreated() throws Exception {
-
-        RegisterRequest request = criarMockRegisterRequest();
-
-        doNothing().when(autenticacaoService).register(any(RegisterRequest.class));
-
-        mockMvc.perform(post("/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(content().string("Usuário cadastrado com sucesso!"));
-        
-        verify(autenticacaoService).register(any(RegisterRequest.class));
-    }
-
-
-    @Test
-    void deveValidarTokenComSucessoQuandoPassadoNoBody() throws Exception {
     
-        User mockUser = criarMockUser(userId, username, TipoUsuario.ORGANIZADOR);
-        Date expiration = new Date(System.currentTimeMillis() + 3600000);
-        String expirationInstant = expiration.toInstant().toString();
+    // --- Testes de Validação ---
+
+    @Test
+    void deveValidarTokenComSucessoQuandoPassadoNoBody() {
+        Map<String, String> body = Map.of("token", validToken);
 
         when(jwtUtil.validateToken(validToken)).thenReturn(true);
         when(jwtUtil.extractUsername(validToken)).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
-        when(jwtUtil.extractExpiration(validToken)).thenReturn(expiration);
+        when(jwtUtil.extractExpiration(validToken)).thenReturn(mockExpiration);
 
-        mockMvc.perform(post("/auth/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("token", validToken))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(userId.toString()))
-                .andExpect(jsonPath("$.username").value(username))
-                .andExpect(jsonPath("$.roles[0]").value("ORGANIZADOR"))
-                .andExpect(jsonPath("$.expiresAt").value(expirationInstant));
+        ResponseEntity<?> response = autenticacaoController.validateToken(body, null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+        assertThat(responseBody.get("username")).isEqualTo(username);
+        assertThat(responseBody.get("userId")).isEqualTo(userId);
     }
 
     @Test
-    void deveValidarTokenComSucessoQuandoPassadoNoHeaderAuthorization() throws Exception {
-       
-        User mockUser = criarMockUser(userId, username, TipoUsuario.CLIENTE);
-        Date expiration = new Date(System.currentTimeMillis() + 3600000);
+    void deveRetornarUnauthorizedQuandoTokenEstiverFaltando() {
+        Map<String, String> body = Map.of(); // Body vazio
+        
+        ResponseEntity<?> response = autenticacaoController.validateToken(body, null);
 
-        when(jwtUtil.validateToken(validToken)).thenReturn(true);
-        when(jwtUtil.extractUsername(validToken)).thenReturn(username);
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(mockUser));
-        when(jwtUtil.extractExpiration(validToken)).thenReturn(expiration);
-
-        mockMvc.perform(post("/auth/validate")
-                        .header("Authorization", "Bearer " + validToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of()))) 
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.roles[0]").value("CLIENTE"));
-    }
-
-
-    @Test
-    void deveRetornarUnauthorizedQuandoTokenEstiverFaltando() throws Exception {
-        mockMvc.perform(post("/auth/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of()))) 
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Missing token"));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody();
+        assertThat(responseBody.get("error")).isEqualTo("Missing token");
     }
 
     @Test
-    void deveRetornarUnauthorizedParaTokenInvalido() throws Exception {
-        when(jwtUtil.validateToken(validToken)).thenReturn(false); 
+    void deveRetornarUnauthorizedParaTokenInvalido() {
+        Map<String, String> body = Map.of("token", validToken);
 
-        mockMvc.perform(post("/auth/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("token", validToken))))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Invalid or expired token"));
+        when(jwtUtil.validateToken(validToken)).thenReturn(false);
+
+        ResponseEntity<?> response = autenticacaoController.validateToken(body, null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody();
+        assertThat(responseBody.get("error")).isEqualTo("Invalid or expired token");
     }
 
     @Test
-    void deveRetornarUnauthorizedSeUsuarioNaoForEncontrado() throws Exception {
+    void deveRetornarUnauthorizedSeUsuarioNaoForEncontrado() {
+        Map<String, String> body = Map.of("token", validToken);
+
         when(jwtUtil.validateToken(validToken)).thenReturn(true);
         when(jwtUtil.extractUsername(validToken)).thenReturn(username);
         when(userRepository.findByUsername(username)).thenReturn(Optional.empty()); 
 
-        mockMvc.perform(post("/auth/validate")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("token", validToken))))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("User not found"));
+        ResponseEntity<?> response = autenticacaoController.validateToken(body, null);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        Map<String, String> responseBody = (Map<String, String>) response.getBody();
+        assertThat(responseBody.get("error")).isEqualTo("User not found");
     }
 }

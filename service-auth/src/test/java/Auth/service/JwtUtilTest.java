@@ -16,9 +16,8 @@ class JwtUtilTest {
     private JwtUtil jwtUtil;
 
     @BeforeEach
-        // roda antes de cada teste
     void setUp() {
-        // para teste segredo e tempo de expiração fixos
+        
         String segredo = "segredoSuperSecretoParaTestesNaoUseEmProducaoCompridoOSuficiente";
         long expiracao = 3600000;
         jwtUtil = new JwtUtil(segredo, expiracao);
