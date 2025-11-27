@@ -10,14 +10,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
 class JwtUtilTest {
 
     private JwtUtil jwtUtil;
 
     @BeforeEach
-        // roda antes de cada teste
     void setUp() {
-        // para teste segredo e tempo de expiração fixos
+        
         String segredo = "segredoSuperSecretoParaTestesNaoUseEmProducaoCompridoOSuficiente";
         long expiracao = 3600000;
         jwtUtil = new JwtUtil(segredo, expiracao);
@@ -56,4 +56,26 @@ class JwtUtilTest {
             jwtUtilExpirado.extractUsername(token); // Tenta extrair o username de um token expirado
         });
     }
+    
+
+    @Test
+    void naoDeveValidarTokenInvalido() {
+        String tokenInvalido = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
+        boolean ehValido = jwtUtil.validateToken(tokenInvalido);
+
+        assertThat(ehValido).isFalse();
+    }
+
+    @Test
+    void deveLancarExcecaoAoExtrairClaimsDeTokenCorrompido() {
+        // Token JWT malformado
+        String tokenCorrompido = "header.payload_corrompido.signature";
+
+        assertThrows(io.jsonwebtoken.MalformedJwtException.class, () -> {
+            jwtUtil.extractUsername(tokenCorrompido);
+        });
+    }
+
+   
 }

@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import service.avaliacao.client.EventClient;
+import service.avaliacao.commons.StatusEvento;
 import service.avaliacao.dto.AvaliacaoRequisicaoDto;
 import service.avaliacao.exception.RecursoNaoEncontradoException;
 import service.avaliacao.model.Avaliacao;
@@ -115,6 +116,45 @@ class AvaliacaoServiceTest {
 
         verify(avaliacaoRepository, never()).delete(any());
     }
+    @Test
+    void naoDeveCriarAvaliacaoSeEventoNaoEncontrado() {
+        UUID autorId = UUID.randomUUID();
+        AvaliacaoRequisicaoDto requisicao = new AvaliacaoRequisicaoDto();
+        requisicao.setEventoId(99L);
+        requisicao.setNota(5);
+
+        // Simula que o EventClient retorna null (evento não encontrado)
+        when(eventClient.getEventById(99L)).thenReturn(null);
+
+        assertThrows(RecursoNaoEncontradoException.class, () -> {
+            avaliacaoService.criarAvaliacao(requisicao, autorId);
+        });
+
+        verify(eventClient).getEventById(99L);
+        verify(avaliacaoRepository, never()).save(any());
+    }
+    @Test
+    void naoDeveCriarAvaliacaoParaEventoCancelado() {
+        UUID autorId = UUID.randomUUID();
+        Long eventoId = 11L;
+        AvaliacaoRequisicaoDto requisicao = new AvaliacaoRequisicaoDto();
+        requisicao.setEventoId(eventoId);
+        requisicao.setNota(3);
+
+        EventClient.EventInfo mockEventoCancelado = new EventClient.EventInfo();
+        mockEventoCancelado.setId(eventoId);
+        mockEventoCancelado.setStatus(StatusEvento.CANCELADO); // Status CANCELADO
+
+        when(eventClient.getEventById(eventoId)).thenReturn(mockEventoCancelado);
+
+        assertThrows(IllegalStateException.class, () -> {
+            avaliacaoService.criarAvaliacao(requisicao, autorId);
+        });
+
+        verify(eventClient).getEventById(eventoId);
+        verify(avaliacaoRepository, never()).save(any());
+    }
+    
 
 
     private Avaliacao criarAvaliacaoMock(Long id, UUID autorId) {
