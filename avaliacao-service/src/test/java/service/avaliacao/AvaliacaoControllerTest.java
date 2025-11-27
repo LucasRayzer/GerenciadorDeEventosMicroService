@@ -58,7 +58,6 @@ class AvaliacaoControllerTest {
         return dto;
     }
 
-    // --- Testes de Criação (POST /avaliacoes/nova-avaliacao) ---
 
     @Test
     void deveCriarAvaliacaoComSucessoERetornarCreated() throws Exception {
@@ -84,7 +83,7 @@ class AvaliacaoControllerTest {
 
         mockMvc.perform(post("/avaliacoes/nova-avaliacao")
                         .header("X-User-Id", organizadorId.toString())
-                        .header("X-User-Roles", "ORGANIZADOR") // Role Incorreta
+                        .header("X-User-Roles", "ORGANIZADOR") 
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requisicao)))
                 .andExpect(status().isForbidden())
@@ -105,7 +104,6 @@ class AvaliacaoControllerTest {
     @Test
     void deveRetornarBadRequestComDadosInvalidos() throws Exception {
         AvaliacaoRequisicaoDto requisicaoInvalida = new AvaliacaoRequisicaoDto();
-        // Faltando nota, comentário e eventoId (violando @NotNull/@NotBlank)
 
         mockMvc.perform(post("/avaliacoes/nova-avaliacao")
                         .header("X-User-Id", autorId.toString())
@@ -115,7 +113,6 @@ class AvaliacaoControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // --- Testes de Leitura (GET /avaliacoes/minhas-avaliacoes) ---
 
     @Test
     void deveBuscarMinhasAvaliacoesComSucesso() throws Exception {
@@ -137,7 +134,6 @@ class AvaliacaoControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    // --- Testes de Deleção (DELETE /avaliacoes/{avaliacaoId}) ---
 
     @Test
     void deveDeletarAvaliacaoComSucessoERetornarNoContent() throws Exception {
@@ -164,12 +160,10 @@ class AvaliacaoControllerTest {
     void deveRetornarNotFoundAoDeletarAvaliacaoInexistente() throws Exception {
         Long avaliacaoId = 99L;
         doThrow(new RecursoNaoEncontradoException("Não encontrado")).when(avaliacaoService).deletarAvaliacao(avaliacaoId, autorId);
-
-        // Se o controller não tiver um @ControllerAdvice, a exceção pode ser mapeada para 500 ou 404 dependendo do Spring Boot padrão.
-        // Assumindo que o RecursoNaoEncontradoException é tratado para 404.
+        
         mockMvc.perform(delete("/avaliacoes/{avaliacaoId}", avaliacaoId)
                         .header("X-User-Id", autorId.toString())
                         .header("X-User-Roles", "CLIENTE"))
-                .andExpect(status().isNotFound()); // Ou 400/500, dependendo da configuração de tratamento de erros.
+                .andExpect(status().isNotFound()); 
     }
 }
