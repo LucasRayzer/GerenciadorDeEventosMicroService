@@ -1,9 +1,9 @@
-package com.users.userservice.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+import com.users.userservice.application.CrudUsuarioService;
 import com.users.userservice.domain.TipoUsuario;
 import com.users.userservice.domain.Usuario;
 import com.users.userservice.repository.UsuarioRepository;
