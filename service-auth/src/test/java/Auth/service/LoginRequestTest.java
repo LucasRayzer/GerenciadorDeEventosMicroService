@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import dto.LoginRequest;
 
-public class LoginRequestTest {
+class LoginRequestTest {
     @Test
     void deveTestarGettersESetters() {
         // Arrange
