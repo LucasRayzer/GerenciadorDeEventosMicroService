@@ -26,6 +26,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -160,10 +162,10 @@ class EventoServiceTest {
     @Test
     void naoDeveDeletarEventoComParticipantesInscritos() {
         Long eventoId = 1L;
-        UUID organizerId = UUID.randomUUID(); // Alterado para UUID
+        UUID organizerId = UUID.randomUUID(); 
         UUID participanteExistente = UUID.randomUUID();
         Evento eventoMock = criarEventoMock(eventoId, organizerId, 10);
-        eventoMock.setParticipanteId(Set.of(participanteExistente)); // Evento com 1 participante (UUID)
+        eventoMock.setParticipanteId(Set.of(participanteExistente)); 
 
         when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoMock));
 
@@ -173,7 +175,92 @@ class EventoServiceTest {
         assertThat(exception.getMessage()).isEqualTo("Não é possível excluir um evento com participantes inscritos.");
         verify(eventoRepository, never()).delete(any());
     }
+    @Test
+    void naoDeveInscreverParticipanteJaInscrito() {
+        Long eventoId = 1L;
+        UUID participanteId = UUID.randomUUID();
+        UUID organizerId = UUID.randomUUID();
 
+        Evento eventoMock = criarEventoMock(eventoId, organizerId, 2);
+        Set<UUID> participantes = new HashSet<>();
+        participantes.add(participanteId);
+        eventoMock.setParticipanteId(participantes);
+
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoMock));
+
+        var exception = assertThrows(IllegalStateException.class, () -> {
+            eventoService.inscreverEmEvento(eventoId, participanteId);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("Usuário já inscrito neste evento.");
+        verify(eventoRepository, never()).save(any());
+        verify(ingressosClient, never()).createTicket(anyLong(), any(), any());
+    }
+    @Test
+    void naoDeveInscreverEmEventoInativo() {
+        Long eventoId = 1L;
+        UUID participanteId = UUID.randomUUID();
+        UUID organizerId = UUID.randomUUID();
+        
+        Evento eventoMock = criarEventoMock(eventoId, organizerId, 10);
+        eventoMock.setStatus(StatusEvento.INATIVO); // Testa com status diferente de ATIVO
+
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoMock));
+  
+        var exception = assertThrows(IllegalStateException.class, () -> {
+            eventoService.inscreverEmEvento(eventoId, participanteId);
+        });
+
+        assertThat(exception.getMessage()).isEqualTo("Só é possível se inscrever em eventos ativos.");
+        verify(eventoRepository, never()).save(any());
+    }
+    @Test
+    void deveAtualizarEventoComSucesso() {
+        Long eventoId = 1L;
+        UUID organizerId = UUID.randomUUID();
+        Evento eventoExistente = criarEventoMock(eventoId, organizerId, 50);
+
+        EventoRequisicaoDto requisicaoAtualizada = criarEventoRequisicaoMock();
+        requisicaoAtualizada.setNome("Nome Atualizado");
+        requisicaoAtualizada.setCapacidade(100);
+        requisicaoAtualizada.setCategoriaId(2L); 
+
+        Categoria novaCategoria = new Categoria();
+        novaCategoria.setId(2L);
+
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoExistente));
+        when(categoriaRepository.findById(2L)).thenReturn(Optional.of(novaCategoria));
+        when(eventoRepository.save(any(Evento.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserClient.UserRespostaDto mockUser = new UserClient.UserRespostaDto();
+        mockUser.setId(organizerId);
+        mockUser.setNome("Organizador Teste");
+        when(userClient.getUserById(organizerId)).thenReturn(mockUser);
+
+        var resposta = eventoService.atualizarEvento(eventoId, requisicaoAtualizada, organizerId);
+
+        assertThat(resposta).isNotNull();
+        assertThat(resposta.getNome()).isEqualTo("Nome Atualizado");
+        assertThat(resposta.getCapacidade()).isEqualTo(100);
+        assertThat(eventoExistente.getCategoria().getId()).isEqualTo(2L);
+        verify(eventoRepository).save(eventoExistente);
+    }
+    @Test
+    void naoDeveAtualizarEventoDeOutroOrganizador() {
+        Long eventoId = 1L;
+        UUID donoId = UUID.randomUUID();
+        UUID invasorId = UUID.randomUUID();
+        Evento eventoExistente = criarEventoMock(eventoId, donoId, 50);
+        EventoRequisicaoDto requisicao = criarEventoRequisicaoMock();
+
+        when(eventoRepository.findById(eventoId)).thenReturn(Optional.of(eventoExistente));
+
+        assertThrows(SecurityException.class, () -> {
+            eventoService.atualizarEvento(eventoId, requisicao, invasorId);
+        });
+
+        verify(eventoRepository, never()).save(any());
+    }
     private EventoRequisicaoDto criarEventoRequisicaoMock() {
         EventoRequisicaoDto dto = new EventoRequisicaoDto();
         dto.setNome("Evento Teste");
