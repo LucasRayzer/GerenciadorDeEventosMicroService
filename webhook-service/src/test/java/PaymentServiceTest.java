@@ -34,14 +34,13 @@ class PaymentServiceTest {
     @Test
     void savePayment_deveRetornarErro_quandoAmountOuCurrencyForemInvalidos() {
         PaymentRequest request = mock(PaymentRequest.class);
-        when(request.getAmount()).thenReturn(null);
-        when(request.getCurrency()).thenReturn(null);
+        when(request.getAmount()).thenReturn(null); // apenas isso
 
         PaymentResponse response = paymentService.savePayment(request);
 
         assertNotNull(response);
-        assertFalse(response.isSuccess());              // ajuste se o nome do getter for diferente
-        assertFalse(response.isForwarded());            // idem
+        assertFalse(response.isSuccess());
+        assertFalse(response.isForwarded());
         assertEquals("amount and currency are required", response.getMessage());
 
         verify(historyRepository, never()).save(any());
