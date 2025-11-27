@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import dto.AuthResponse;
 
-public class AuthResponseTest {
+class AuthResponseTest {
     @Test
     void deveTestarGettersESetters() {
         // Arrange

@@ -5,7 +5,7 @@ import service.eventos.dto.EventoRequisicaoDto;
 
 import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
-public class EventoRequisicaodtoTest {
+class EventoRequisicaodtoTest {
     @Test
     void deveTestarGettersESetters() {
         // Arrange

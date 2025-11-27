@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import model.TipoUsuario;
 
-public class TipoUsuarioTest {
+class TipoUsuarioTest {
     @Test
     void deveConterOsValoresCorretos() {
         // Assert
