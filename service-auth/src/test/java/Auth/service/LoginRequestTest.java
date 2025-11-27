@@ -14,7 +14,6 @@ public class LoginRequestTest {
         String senhaEsperada = "senha123";
         LoginRequest dto = new LoginRequest();
 
-        // Act
         dto.setUsername(usernameEsperado);
         dto.setSenha(senhaEsperada);
 
