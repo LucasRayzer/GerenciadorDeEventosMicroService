@@ -1,4 +1,4 @@
-﻿package com.paymentservice.service;
+package com.paymentservice.service;
 
 import com.paymentservice.client.TicketClient;
 import com.paymentservice.model.Billing;
