@@ -91,7 +91,7 @@ class BillingServiceTest {
         verifyNoInteractions(ticketClient);
     }
 
-    @Test
+    @Test //
     void listByTicketIdExpiresOverdueBillingsOnly() {
         LocalDateTime now = LocalDateTime.now();
 
